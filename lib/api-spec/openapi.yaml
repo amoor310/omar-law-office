@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: appointments
+    description: Public appointment requests and availability
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /appointments/availability:
+    get:
+      operationId: getAppointmentAvailability
+      tags: [appointments]
+      summary: Get unavailable times for a date
+      parameters:
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+      responses:
+        "200":
+          description: Unavailable appointment times for the selected date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppointmentAvailability"
+  /appointments:
+    post:
+      operationId: createAppointment
+      tags: [appointments]
+      summary: Submit an appointment request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentInput"
+      responses:
+        "201":
+          description: Appointment request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "400":
+          description: Invalid appointment details
+        "409":
+          description: The selected time is no longer available
+  /appointments/manage:
+    get:
+      operationId: getAppointmentManagementAction
+      tags: [appointments]
+      summary: Open a secure appointment action page from the office notification email
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [accept, postpone]
+      responses:
+        "200":
+          description: Confirmation page for the selected action
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: The action link is invalid or expired
+  /appointments/manage/accept:
+    post:
+      operationId: acceptAppointmentRequest
+      tags: [appointments]
+      summary: Confirm acceptance of an appointment request
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Appointment request accepted
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: The action link is invalid, expired, or already used
+  /appointments/manage/postpone:
+    post:
+      operationId: postponeAppointmentRequest
+      tags: [appointments]
+      summary: Propose a different date and time for an appointment request
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/AppointmentRescheduleInput"
+      responses:
+        "200":
+          description: New proposed appointment time saved
+          content:
+            text/html:
+              schema:
+                type: string
+        "400":
+          description: Invalid date or time
+        "404":
+          description: The action link is invalid, expired, or already used
+        "409":
+          description: The proposed time is already requested
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: ["string", "null"]
+        topic:
+          type: string
+        meetingMode:
+          type: string
+          enum: [office, phone, online]
+        date:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        time:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, accepted, reschedule_proposed]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - topic
+        - meetingMode
+        - date
+        - time
+        - status
+        - createdAt
+    AppointmentInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 40
+        topic:
+          type: string
+          enum: [consultation, contracts, family, business, real_estate, labor, other]
+        meetingMode:
+          type: string
+          enum: [office, phone, online]
+        date:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        time:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+        message:
+          type: string
+          maxLength: 1500
+      required:
+        - name
+        - email
+        - topic
+        - meetingMode
+        - date
+        - time
+    AppointmentRescheduleInput:
+      type: object
+      properties:
+        date:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        time:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+      required:
+        - date
+        - time
+    AppointmentAvailability:
+      type: object
+      properties:
+        date:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        unavailableSlots:
+          type: array
+          items:
+            type: string
+            pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+      required:
+        - date
+        - unavailableSlots
+

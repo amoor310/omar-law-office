@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "مكتب عمر محمد المطلق للمحاماة"
+description = "Arabic-first law office website with firm information, location link, legal inquiry form, and an online appointment request calendar."
+version = "1.0.0"
+id = "artifacts/omar-law-office"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24662
+
+[services.development]
+run = "pnpm --filter @workspace/omar-law-office run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/omar-law-office", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/omar-law-office/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24662"
+BASE_PATH = "/"
