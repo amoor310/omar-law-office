@@ -1,7 +1,7 @@
 [build]
   base = "artifacts/omar-law-office"
   publish = "dist"
-  command = "pnpm build"
+  command = "pnpm --filter @workspace/omar-law-office... run build"
 
 [[redirects]]
   from = "/*"
