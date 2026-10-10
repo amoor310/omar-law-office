@@ -33,15 +33,21 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-// خدمة ملفات React Frontend مع فحص مرن للمسارات في Render
-const possiblePaths = [
-  path.resolve(__dirname, "../dist"),
+// تحديد مسار ملفات الـ React Frontend
+const candidatePaths = [
   path.resolve(__dirname, "../../omar-law-office/dist"),
   path.resolve(process.cwd(), "artifacts/omar-law-office/dist"),
+  path.resolve(__dirname, "../dist"),
   path.resolve(process.cwd(), "dist"),
 ];
 
-const clientDistPath = possiblePaths.find((p) => fs.existsSync(p)) || possiblePaths[0];
+let clientDistPath = candidatePaths[0];
+for (const p of candidatePaths) {
+  if (fs.existsSync(p)) {
+    clientDistPath = p;
+    break;
+  }
+}
 
 app.use(express.static(clientDistPath));
 
@@ -50,7 +56,7 @@ app.get("*", (req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send("Frontend build not found at " + clientDistPath);
+    res.status(404).send("Frontend build files not found.");
   }
 });
 
