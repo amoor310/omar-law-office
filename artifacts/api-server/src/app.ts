@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
+import fs from "fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -34,13 +35,32 @@ app.use(express.urlencoded({ extended: true }));
 // مسارات الـ API
 app.use("/api", router);
 
-// تقديم ملفات الـ Frontend المبنية
-const clientDist = path.join(process.cwd(), "artifacts/omar-law-office/dist");
+// تحديد كافة المسارات المحتملة لمجلد الفرونت إند
+const possiblePaths = [
+  path.resolve(process.cwd(), "artifacts/omar-law-office/dist"),
+  path.resolve(__dirname, "../../omar-law-office/dist"),
+  path.resolve(__dirname, "../dist"),
+  path.resolve(process.cwd(), "dist"),
+];
 
-app.use(express.static(clientDist));
+// البحث عن أول مسار موجود بالفعل
+let clientDistPath = possiblePaths.find((p) => fs.existsSync(p)) || possiblePaths[0];
+
+console.log("Serving static frontend files from:", clientDistPath);
+
+app.use(express.static(clientDistPath));
 
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(clientDist, "index.html"));
+  const indexPath = path.join(clientDistPath, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send(`
+      <h2>Server is running successfully!</h2>
+      <p>Frontend dist directory was not found at: <code>${clientDistPath}</code></p>
+      <p>Please check your build scripts.</p>
+    `);
+  }
 });
 
 export default app;
