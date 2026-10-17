@@ -79,7 +79,7 @@ function detailsTable(appointment: Appointment): string {
 }
 
 function emailShell(title: string, content: string): string {
-  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head><body style="margin:0;background:#f6f4ef;font-family:Arial,Tahoma,sans-serif;color:#20241f"><main style="max-width:620px;margin:28px auto;padding:28px;background:#fff;border:1px solid #e9e2d5;border-radius:12px"><p style="margin:0 0 10px;color:#a48245;font-size:13px">مكتب عمر محمد المطلق للمحاماة</p><h1 style="margin:0 0 18px;font-size:22px">${escapeHtml(title)}</h1>${content}</main></body></html>`;
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head><body style="margin:0;background:#f6f4ef;font-family:Arial,Tahoma,sans-serif;color:#20241f"><main style="max-width:620px;margin:28px auto;padding:28px;background:#fff;border:1px solid #e9e2d5;border-radius:12px"><p style="margin:0 0 10px;color:#a48245;font-size:13px">مكتب عمر محمد مطالقة للمحاماة</p><h1 style="margin:0 0 18px;font-size:22px">${escapeHtml(title)}</h1>${content}</main></body></html>`;
 }
 
 async function sendResendEmail(message: {
@@ -156,7 +156,7 @@ export async function sendAppointmentAcceptedEmail(
   return sendResendEmail({
     to: appointment.email,
     replyTo: getSetting("APPOINTMENT_NOTIFICATION_EMAIL"),
-    subject: "تم تأكيد موعدك — مكتب عمر محمد المطلق للمحاماة",
+    subject: "تم تأكيد موعدك — مكتب عمر محمد مطالقة للمحاماة",
     html: emailShell("تم تأكيد موعدك", content),
   });
 }
@@ -173,7 +173,7 @@ export async function sendAppointmentPostponedEmail(
   return sendResendEmail({
     to: appointment.email,
     replyTo: getSetting("APPOINTMENT_NOTIFICATION_EMAIL"),
-    subject: "اقتراح موعد بديل لطلبك — مكتب عمر محمد المطلق للمحاماة",
+    subject: "اقتراح موعد بديل لطلبك — مكتب عمر محمد مطالقة للمحاماة",
     html: emailShell("اقتراح موعد بديل", content),
   });
 }
