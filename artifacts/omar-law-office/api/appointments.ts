@@ -1,4 +1,4 @@
-
+﻿
 export default async function handler(req: any, res: any) {
   // Accept POST requests only
   if (req.method !== "POST") {
@@ -9,8 +9,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const scriptUrl = process.env.APPS_SCRIPT_URL;
-    const apiSecret = process.env.API_SECRET;
+    const scriptUrl = (globalThis as any).process.env.APPS_SCRIPT_URL;
+    const apiSecret = (globalThis as any).process.env.API_SECRET;
 
     if (!scriptUrl || !apiSecret) {
       return res.status(500).json({
@@ -85,3 +85,4 @@ export default async function handler(req: any, res: any) {
     });
   }
 }
+
